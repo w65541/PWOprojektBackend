@@ -18,8 +18,12 @@ namespace WebApplication1.Controllers
 
 
         /// <summary>
-        /// Create user
+        /// Create new user
         /// </summary>
+        /// <param name="username">Login</param>
+        /// <param name="password">Password</param>
+        /// <param name="email">Email</param>
+        /// <returns>200</returns>
         [HttpPost]
         [Route("add")]
         [AllowAnonymous]
@@ -41,6 +45,12 @@ namespace WebApplication1.Controllers
             return Ok();
         }
 
+
+        /// <summary>
+        /// Get user information
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>UserDto if found, otherwise 400</returns>
         [HttpGet]
         [Route("get")]
         public ActionResult<UserDto> GetUser(int id)
@@ -56,8 +66,11 @@ namespace WebApplication1.Controllers
 
 
         /// <summary>
-        /// Archive user
+        /// Archive User
         /// </summary>
+        /// <param name="id">Id of archivee</param>
+        /// <param name="archId">Id of archiver</param>
+        /// <returns>200 if found, otherwise 400</returns>
         [HttpPost]
         [Route("archive")]
         public ActionResult Archive(int id, int archId) {

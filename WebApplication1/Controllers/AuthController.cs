@@ -17,6 +17,14 @@ namespace WebApplication1.Controllers
         public AuthController(DatabaseContext context) { _context = context; }
 
 
+
+
+        /// <summary>
+        /// Login to get session key
+        /// </summary>
+        /// <param name="login">Login</param>
+        /// <param name="pwd">Password</param>
+        /// <returns> Jwt Security Token if login credentials are correct, otherwise 401.</returns>
         [HttpPost]
         [AllowAnonymous]
         public ActionResult<string> Authenticate(string login, string pwd)
