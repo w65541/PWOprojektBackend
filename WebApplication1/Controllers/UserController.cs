@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Database;
 using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Database.Dto;
+using Database.Extensions;
 namespace WebApplication1.Controllers
 {
     
@@ -12,10 +14,12 @@ namespace WebApplication1.Controllers
     {
         private readonly DatabaseContext _context;
         public UserController(DatabaseContext context) { _context = context; }
+        private UserExtension userExtension= new UserExtension();
 
 
-        
-        
+        /// <summary>
+        /// Create user
+        /// </summary>
         [HttpPost]
         [Route("add")]
         [AllowAnonymous]
@@ -37,17 +41,33 @@ namespace WebApplication1.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        [Route("get")]
+        public ActionResult<UserDto> GetUser(int id)
+        {
+            User temp = _context.Users.Where(x => x.Id == id).FirstOrDefault();
+            if (temp != null)
+            {
+                
+                return new OkObjectResult(userExtension.toDto(temp));
+            }
+            return BadRequest("No such user");
+        }
+
 
         /// <summary>
         /// Archive user
         /// </summary>
         [HttpPost]
         [Route("archive")]
-        public ActionResult Archive(int id) {
+        public ActionResult Archive(int id, int archId) {
             User temp=_context.Users.Where(x=>x.Id == id).FirstOrDefault();
             if (temp != null) {
                 temp.IsActive = false;
+                temp.ArchiveDate= DateTime.Now;
+                temp.ArchiverId=archId;
                 _context.SaveChanges();
+
                 return Ok();
             }
             return BadRequest("No such user");
