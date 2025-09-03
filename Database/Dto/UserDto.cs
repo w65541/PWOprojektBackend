@@ -15,7 +15,8 @@ namespace Database.Dto
         public string Login { get; set; }
         public string Haslo { get; set; }
         public string Email { get; set; }
-        public string Type { get; set; }
+        public int TypeId { get; set; }
+        public string Type {  get; set; }
         public bool IsActive { get; set; }
 
         public DateTime CreationDate { get; set; }

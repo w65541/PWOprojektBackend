@@ -4,7 +4,8 @@ using Database;
 using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Database.Dto;
-using Database.Extensions;
+
+using AutoMapper;
 namespace WebApplication1.Controllers
 {
     
@@ -12,9 +13,14 @@ namespace WebApplication1.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly DatabaseContext _context;
-        public UserController(DatabaseContext context) { _context = context; }
-        private UserExtension userExtension= new UserExtension();
+        public UserController(DatabaseContext context,IMapper mapper)
+        { 
+            _context = context;
+            _mapper = mapper;
+        }
+       
 
 
         /// <summary>
@@ -30,19 +36,29 @@ namespace WebApplication1.Controllers
       
         public ActionResult AddUser(string username, string password, string email)
         {
-            _context.Users.Add(new Database.Entities.User
+            try
+            {
+                if (_context.Users.Where(x => x.Login == username && x.IsActive).Any()) return BadRequest("Username taken");
+                if (_context.Users.Where(x => x.Email == username && x.IsActive).Any()) return BadRequest("Email taken");
+                _context.Users.Add(new Database.Entities.User
             {
                 Email = email,
                 Haslo = password,
                 Login = username,
                 IsActive = true,
-                Type = _context.UserTypes.Where(x=>x.Id==2).FirstOrDefault(),
+                TypeId = 2,
                 CreationDate= DateTime.Now,
-                
             }
             );
             _context.SaveChanges();
             return Ok();
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+            
         }
 
 
@@ -55,13 +71,22 @@ namespace WebApplication1.Controllers
         [Route("get")]
         public ActionResult<UserDto> GetUser(int id)
         {
+            try
+            {
             User temp = _context.Users.Where(x => x.Id == id).FirstOrDefault();
             if (temp != null)
             {
                 
-                return new OkObjectResult(userExtension.toDto(temp));
+                return new OkObjectResult(_mapper.Map<UserDto>(temp));
             }
             return BadRequest("No such user");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+            
         }
 
 
@@ -74,16 +99,34 @@ namespace WebApplication1.Controllers
         [HttpPost]
         [Route("archive")]
         public ActionResult Archive(int id, int archId) {
-            User temp=_context.Users.Where(x=>x.Id == id).FirstOrDefault();
-            if (temp != null) {
-                temp.IsActive = false;
-                temp.ArchiveDate= DateTime.Now;
-                temp.ArchiverId=archId;
-                _context.SaveChanges();
 
-                return Ok();
+            try
+            {
+                User arch= _context.Users.Where(x => x.Id == archId && x.IsActive).FirstOrDefault();
+                User temp=_context.Users.Where(x=>x.Id == id && x.IsActive).FirstOrDefault();
+
+                if (temp != null && arch != null) {
+                    if(id==archId || arch.TypeId == 1)
+                    {
+                        temp.IsActive = false;
+                        temp.ArchiveDate= DateTime.Now;
+                        temp.ArchiverId=archId;
+                        _context.SaveChanges();
+
+                        return Ok();
+                    }
+                    return Unauthorized();
             }
             return BadRequest("No such user");
+
+
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+            
         }
 
     }

@@ -1,13 +1,18 @@
 using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
+using WebApplication1;
+
 string con = "Server=localhost\\SQLEXPRESS01;Database=master;Trusted_Connection=True;";
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<DatabaseContext>();
+builder.Services.AddAutoMapper(cfg => { }, typeof(MapperProfile).Assembly);
 builder.Services.AddControllers();
 
 
@@ -28,6 +33,11 @@ builder.Services.AddAuthentication(x => {
 }
 
     );
+
+NLog.LogManager.Setup().LoadConfiguration(builder => {
+    builder.ForLogger().FilterMinLevel(NLog.LogLevel.Info).WriteToConsole();
+    builder.ForLogger().FilterMinLevel(NLog.LogLevel.Debug).WriteToFile(fileName: "file.txt");
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -61,6 +71,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

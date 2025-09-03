@@ -30,10 +30,10 @@ namespace Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ArchiveDate")
+                    b.Property<DateTime?>("ArchiveDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ArchiverId")
+                    b.Property<int?>("ArchiverId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationDate")
@@ -50,20 +50,54 @@ namespace Database.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastLoginDate")
+                    b.Property<DateTime?>("LastLoginDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TypeId");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Database.Entities.UserType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("UserTypes");
+                });
+
+            modelBuilder.Entity("Database.Entities.User", b =>
+                {
+                    b.HasOne("Database.Entities.UserType", "Type")
+                        .WithMany("Users")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("Database.Entities.UserType", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

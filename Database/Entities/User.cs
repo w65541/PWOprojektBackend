@@ -17,12 +17,12 @@ namespace Database.Entities
         public string Haslo { get; set; }
         public string Email { get; set; }
         public int TypeId { get; set; }
-        public UserType Type { get; set; }
+        public virtual UserType Type { get; set; }
         public bool IsActive { get; set; }
 
         public DateTime CreationDate { get; set; }
-        public DateTime LastLoginDate { get; set; }
-        public DateTime ArchiveDate { get; set; }
-        public int ArchiverId { get; set; }
+        public DateTime? LastLoginDate { get; set; }
+        public DateTime? ArchiveDate { get; set; }
+        public int? ArchiverId { get; set; }
     }
 }

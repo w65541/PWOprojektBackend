@@ -14,7 +14,9 @@ namespace Database
         public DbSet<UserType> UserTypes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS01;TrustServerCertificate=True;Database=Database;Trusted_Connection=True;user=admin'password=admin");
+            optionsBuilder
+                .UseLazyLoadingProxies()
+                .UseSqlServer(@"Server=localhost\SQLEXPRESS01;TrustServerCertificate=True;Database=Database;Trusted_Connection=True;user=admin'password=admin");
         }
     }
 }

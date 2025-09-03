@@ -2,6 +2,7 @@
 using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -29,7 +30,9 @@ namespace WebApplication1.Controllers
         [AllowAnonymous]
         public ActionResult<string> Authenticate(string login, string pwd)
         {
-            User user=_context.Users.Where(x=> x.Login == login && x.Haslo==pwd).FirstOrDefault();
+            try
+            {
+            User user=_context.Users.Where(x=> x.Login == login && x.Haslo==pwd && x.IsActive).FirstOrDefault();
             
             if (user == null) return Unauthorized();
             
@@ -46,7 +49,7 @@ namespace WebApplication1.Controllers
                         new Claim(ClaimTypes.GivenName, user.Login),
                         new Claim(ClaimTypes.Surname, user.Haslo),
                         new Claim(ClaimTypes.Email, user.Email),
-                        new Claim(ClaimTypes.Actor, user.Type)
+                        new Claim(ClaimTypes.Actor, user.Type.Name)
                     }),
                 Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -56,6 +59,13 @@ namespace WebApplication1.Controllers
             var Token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
             
             return new OkObjectResult(Token);
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+            
         }
     }
 }
