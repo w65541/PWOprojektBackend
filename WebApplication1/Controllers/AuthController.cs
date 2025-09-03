@@ -15,8 +15,9 @@ namespace WebApplication1.Controllers
     {
 
         private readonly DatabaseContext _context;
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public AuthController(DatabaseContext context) { _context = context; }
-
+        
 
 
 
@@ -33,8 +34,12 @@ namespace WebApplication1.Controllers
             try
             {
             User user=_context.Users.Where(x=> x.Login == login && x.Haslo==pwd && x.IsActive).FirstOrDefault();
-            
-            if (user == null) return Unauthorized();
+
+                if (user == null) 
+                {
+                    Logger.Debug("Unsucesfull login attempt to User= "+login);
+                    return Unauthorized();
+                        }
             
             user.LastLoginDate= DateTime.Now;
             _context.SaveChanges();
@@ -49,7 +54,7 @@ namespace WebApplication1.Controllers
                         new Claim(ClaimTypes.GivenName, user.Login),
                         new Claim(ClaimTypes.Surname, user.Haslo),
                         new Claim(ClaimTypes.Email, user.Email),
-                        new Claim(ClaimTypes.Actor, user.Type.Name)
+                        new Claim(ClaimTypes.Actor, user.Type.Id.ToString())
                     }),
                 Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -57,13 +62,14 @@ namespace WebApplication1.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var Token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-            
+                Logger.Debug("Login of User=" + login);
             return new OkObjectResult(Token);
             }
             catch (Exception e)
             {
-
-                return BadRequest(e.Message);
+                Logger.Error(e);
+                return BadRequest();
+                
             }
             
         }

@@ -21,7 +21,7 @@ namespace Database.Dto
 
         public DateTime CreationDate { get; set; }
         public DateTime LastLoginDate { get; set; }
-        public DateTime ArchiveDate { get; set; }
-        public int ArchiverId { get; set; }
+        public DateTime? ArchiveDate { get; set; }
+        public int? ArchiverId { get; set; }
     }
 }
