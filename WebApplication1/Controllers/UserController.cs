@@ -36,7 +36,7 @@ namespace WebApplication1.Controllers
                 Haslo = password,
                 Login = username,
                 IsActive = true,
-                Type = "regular",
+                Type = _context.UserTypes.Where(x=>x.Id==2).FirstOrDefault(),
                 CreationDate= DateTime.Now,
                 
             }
