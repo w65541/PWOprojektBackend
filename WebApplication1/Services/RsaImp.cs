@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace WebApplication1
+namespace WebApplication1.Services
 {
     public class RsaImp
     {

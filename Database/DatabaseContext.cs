@@ -12,6 +12,19 @@ namespace Database
     {
         public DbSet<User> Users { get; set; }
         public DbSet<UserType> UserTypes { get; set; }
+        public DbSet<LoginLog> LoginLogs { get; set; }
+        public DbSet<UserModificationLog> UserModificationLogs { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Tell EF Core this table has a trigger
+            modelBuilder.Entity<User>()
+                .ToTable("Users", tb => tb.HasTrigger("userModificationLog"));
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder

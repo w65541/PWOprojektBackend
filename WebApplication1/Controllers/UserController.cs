@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace WebApplication1.Controllers
         private readonly DatabaseContext _context;
         private readonly RsaImp rsa = new RsaImp();
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        private static TokenService _tokenService=new TokenService();
+        private static TokenService _tokenService = new TokenService();
 
 
         public UserController(DatabaseContext context, IMapper mapper)
@@ -55,20 +56,24 @@ namespace WebApplication1.Controllers
                 if (_context.Users.Where(x => x.Email == username && x.IsActive).Any())
                     return BadRequest("Email taken");
 
-                _context.Users.Add(new Database.Entities.User
+                if (username != null && password != null && email != null)
                 {
-                    Email = email,
-                    Haslo = password,
-                    Login = username,
-                    IsActive = true,
-                    TypeId = 2,
-                    CreationDate = DateTime.Now,
-                }
-            );
+                    _context.Users.Add(new Database.Entities.User
+                    {
+                        Email = email,
+                        Haslo = password,
+                        Login = username,
+                        IsActive = true,
+                        TypeId = 2,
+                        CreationDate = DateTime.Now,
+                    }
+                    );
 
-                _context.SaveChanges();
-                Logger.Debug("Added new user");
-                return Ok();
+                    _context.SaveChanges();
+                    Logger.Debug("Added new user");
+                    return Ok();
+                }
+                return BadRequest("Something is missing");
             }
             catch (Exception e)
             {
@@ -78,7 +83,29 @@ namespace WebApplication1.Controllers
 
         }
 
+        [HttpPost]
+        [Route("recover")]
+        [AllowAnonymous]
 
+        public ActionResult recover(string email)
+        {
+            try
+            {
+                var user = _context.Users.Where(x => x.Email.ToLower().Equals(email.ToLower())).FirstOrDefault();
+                if (user != null)
+                {
+                    //SendEmail
+                    Logger.Debug("Send recovery email to " + email);
+                    return Ok();
+                }
+                return BadRequest("No such email found");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+                return BadRequest("No such email found");
+            }
+        }
         /// <summary>
         /// Get user information
         /// </summary>
@@ -105,11 +132,36 @@ namespace WebApplication1.Controllers
             {
 
                 Logger.Error(e);
-                return BadRequest();
+                return BadRequest(e);
             }
 
         }
 
+        /// <summary>
+        /// Get all users
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("getAll")]
+        public ActionResult GetUsers()
+        {
+            try
+            {
+                var Users = new List<UserDto>();
+                foreach (var item in _context.Users.ToArray())
+                {
+                    Users.Add(_mapper.Map<UserDto>(item));
+                }
+                return Ok(Users);
+            }
+            catch (Exception e)
+            {
+
+                Logger.Error(e);
+                return BadRequest(e);
+            }
+
+        }
 
         /// <summary>
         /// Archive User
@@ -148,12 +200,12 @@ namespace WebApplication1.Controllers
             {
 
                 Logger.Error(e);
-                return BadRequest();
+                return BadRequest(e);
             }
 
         }
 
-       
+
 
         /// <summary>
         /// Archive user using token for validation
@@ -172,11 +224,22 @@ namespace WebApplication1.Controllers
                 var handler = new JwtSecurityTokenHandler();
                 var jsonToken = handler.ReadToken(token);
                 var tokenS = jsonToken as JwtSecurityToken;
-                var archId = int.Parse(tokenS.Claims.ToList().Find(match: x => x.Type == "unique_name").Value);
-                var archType = int.Parse(tokenS.Claims.ToList().Find(match: x => x.Type == "actort").Value);
+                int archId, archType;
+
+                if (tokenS.Claims.ToList().Find(match: x => x.Type == "unique_name") != null
+                    && tokenS.Claims.ToList().Find(match: x => x.Type == "actort") != null)
+                {
+                    archId = int.Parse(tokenS.Claims.ToList().Find(match: x => x.Type == "unique_name").Value);
+                    archType = int.Parse(tokenS.Claims.ToList().Find(match: x => x.Type == "actort").Value);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
                 User temp = _context.Users.Where(x => x.Id == id && x.IsActive).FirstOrDefault();
 
-                if (temp != null && _tokenService.validateToken(token,Logger))
+                if (temp != null && _tokenService.validateToken(token, Logger))
                 {
                     if (id == archId || archType == 1)
                     {
@@ -197,7 +260,7 @@ namespace WebApplication1.Controllers
             {
 
                 Logger.Error(e);
-                return BadRequest();
+                return BadRequest(e);
             }
 
         }

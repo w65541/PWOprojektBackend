@@ -24,5 +24,9 @@ namespace Database.Entities
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ArchiveDate { get; set; }
         public int? ArchiverId { get; set; }
+
+        public virtual ICollection<LoginLog>? LoginLog { get; set; }
+        public virtual ICollection<UserModificationLog>? UserModificationLogs { get; set; }
+        public virtual ICollection<Notification>? Notifications { get; set; }
     }
 }

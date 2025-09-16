@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
 using System.Diagnostics;
-using WebApplication1;
+using WebApplication1.Services;
 
 string con = "Server=localhost\\SQLEXPRESS01;Database=master;Trusted_Connection=True;";
 var builder = WebApplication.CreateBuilder(args);

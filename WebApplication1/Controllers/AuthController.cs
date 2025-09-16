@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers
 {
@@ -59,6 +60,7 @@ namespace WebApplication1.Controllers
                 }
 
                 user.LastLoginDate = DateTime.Now;
+                //_context.LoginLogs.Add(new LoginLog { UserId=user.Id,LoginDate= (DateTime)user.LastLoginDate });
                 _context.SaveChanges();
 
                 var key = "Cp5wQhqCpttzoJG53ausxUwlTH38jd24ChC0tA8SGaEkJBHqWpHVwGhevEcXCVE"u8.ToArray();
@@ -80,12 +82,13 @@ namespace WebApplication1.Controllers
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var Token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
                 Logger.Debug("Login of User=" + login);
+                
                 return new OkObjectResult(Token);
             }
             catch (Exception e)
             {
                 Logger.Error(e);
-                return BadRequest();
+                return BadRequest(e.Message);
 
             }
 
