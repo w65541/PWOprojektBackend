@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(MapperProfile).Assembly);
+builder.Services.AddSingleton<SSEService>();
 builder.Services.AddControllers();
 
 
@@ -77,9 +78,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular",
         policy =>
         {
-            policy.AllowAnyOrigin() // Angular dev server
+            policy.WithOrigins("http://localhost:4200") // Angular dev server
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+            
         });
 });
 
