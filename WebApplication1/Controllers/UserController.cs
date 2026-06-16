@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Database;
 using Database.Dto;
 using Database.Entities;
@@ -53,7 +53,7 @@ namespace WebApplication1.Controllers
                 if (_context.Users.Where(x => x.Login == username && x.IsActive).Any())
                     return BadRequest("Username taken");
 
-                if (_context.Users.Where(x => x.Email == username && x.IsActive).Any())
+                if (_context.Users.Where(x => x.Email == email && x.IsActive).Any())
                     return BadRequest("Email taken");
 
                 if (username != null && password != null && email != null)
@@ -77,13 +77,63 @@ namespace WebApplication1.Controllers
             }
             catch (Exception e)
             {
-                Logger.Error(e);
-                return BadRequest(e);
+                Logger.Error(e.Message);
+        if (e.InnerException != null)
+                {
+                    Logger.Error(e.InnerException.Message);
+          return BadRequest(e.Message+"\n"+ e.InnerException.Message);
+        }
+        return BadRequest(e.Message);
             }
 
         }
 
-        [HttpPost]
+    [HttpPut]
+    [Route("update")]
+    public ActionResult UpdateUser(int id, [FromBody] UpdateUserDto dto)
+    {
+      try
+      {
+        var user = _context.Users.Where(x => x.Id == id && x.IsActive).FirstOrDefault();
+        if (user == null)
+          return BadRequest("User not found");
+
+        if (!string.IsNullOrWhiteSpace(dto.Login) && dto.Login != user.Login)
+        {
+          if (_context.Users.Any(x => x.Login == dto.Login && x.IsActive && x.Id != id))
+            return BadRequest("Login already taken");
+          user.Login = dto.Login;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email != user.Email)
+        {
+          if (_context.Users.Any(x => x.Email == dto.Email && x.IsActive && x.Id != id))
+            return BadRequest("Email already taken");
+          user.Email = dto.Email;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+          user.Haslo = dto.Password;
+
+        if (dto.TypeId.HasValue && dto.TypeId.Value > 0)
+        {
+          if (!_context.UserTypes.Any(t => t.Id == dto.TypeId.Value))
+            return BadRequest("Invalid TypeId");
+          user.TypeId = dto.TypeId.Value;
+        }
+
+        _context.SaveChanges();
+        Logger.Debug("Updated user Id=" + id);
+        return Ok(_mapper.Map<UserDto>(user));
+      }
+      catch (Exception e)
+      {
+        Logger.Error(e);
+        return BadRequest(e.Message);
+      }
+    }
+
+    [HttpPost]
         [Route("recover")]
         [AllowAnonymous]
 

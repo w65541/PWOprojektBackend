@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Database;
 using Database.Dto;
 using Database.Entities;
@@ -111,6 +111,7 @@ namespace WebApplication1.Controllers
                     Read = false,
                 };
                 _context.Notifications.Add(not);
+                Thread.Sleep(5000);
                 _context.SaveChanges();
                 not = _context.Notifications.Where(x => x.UserId == not.UserId && x.Message == not.Message && x.Created == not.Created && !x.Read).FirstOrDefault();
 

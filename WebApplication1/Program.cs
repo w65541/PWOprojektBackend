@@ -8,16 +8,21 @@ using NLog;
 using System.Diagnostics;
 using WebApplication1.Services;
 
-string con = "Server=localhost\\SQLEXPRESS01;Database=master;Trusted_Connection=True;";
+string con = "Server=localhost;database=UserManagement;User=root;Password=root;";//"Server=localhost\\SQLEXPRESS01;Database=master;Trusted_Connection=True;";
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(MapperProfile).Assembly);
 builder.Services.AddSingleton<SSEService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+  options.JsonSerializerOptions.ReferenceHandler =
+      System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+}); ;
 
-
+builder.Services.AddSingleton<BackgroundNotificationService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<BackgroundNotificationService>());
 
 builder.Services.AddAuthentication(x => { 
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,3 +109,5 @@ app.UseCors("AllowAngular");
 app.MapControllers().RequireAuthorization();
 
 app.Run();
+
+public partial class Program { }

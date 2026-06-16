@@ -1,4 +1,4 @@
-﻿using Database.Entities;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,15 +21,19 @@ namespace Database
             base.OnModelCreating(modelBuilder);
 
             // Tell EF Core this table has a trigger
-            modelBuilder.Entity<User>()
-                .ToTable("Users", tb => tb.HasTrigger("userModificationLog"));
+           /* modelBuilder.Entity<User>()
+                .ToTable("Users", tb => tb.HasTrigger("userModificationLog"));*/
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder
+      var connectionString = "Server=localhost;database=UserManagement;User=root;Password=root;";
+      optionsBuilder
+          .UseLazyLoadingProxies()
+          .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+     /* optionsBuilder
                 .UseLazyLoadingProxies()
-                .UseSqlServer(@"Server=localhost\SQLEXPRESS01;TrustServerCertificate=True;Database=Database;Trusted_Connection=True;user=admin'password=admin");
+                .UseSqlServer(@"Server=localhost\SQLEXPRESS01;TrustServerCertificate=True;Database=Database;Trusted_Connection=True;user=admin'password=admin");*/
         }
     }
 }
