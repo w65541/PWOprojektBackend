@@ -102,6 +102,16 @@ namespace WebApplication1.Controllers
         {
           if (_context.Users.Any(x => x.Login == dto.Login && x.IsActive && x.Id != id))
             return BadRequest("Login already taken");
+          
+          _context.UserModificationLogs.Add(new UserModificationLog
+          {
+            UserId = id,
+            UpdateDate = DateTime.Now,
+            modColumn = "Login",
+            newValue = dto.Login,
+            oldValue = user.Login
+
+          });
           user.Login = dto.Login;
         }
 
@@ -109,16 +119,44 @@ namespace WebApplication1.Controllers
         {
           if (_context.Users.Any(x => x.Email == dto.Email && x.IsActive && x.Id != id))
             return BadRequest("Email already taken");
+          
+          _context.UserModificationLogs.Add(new UserModificationLog
+          {
+            UserId = id,
+            UpdateDate = DateTime.Now,
+            modColumn = "Email",
+            newValue = dto.Email,
+            oldValue = user.Email
+
+          });
           user.Email = dto.Email;
         }
 
-        if (!string.IsNullOrWhiteSpace(dto.Password))
-          user.Haslo = dto.Password;
+        if (!string.IsNullOrWhiteSpace(dto.Password)) {
+          _context.UserModificationLogs.Add(new UserModificationLog
+          {
+            UserId = id,
+            UpdateDate = DateTime.Now,
+            modColumn = "Haslo",
+            newValue = dto.Password,
+            oldValue = user.Haslo
+
+          });
+          user.Haslo = dto.Password;}
 
         if (dto.TypeId.HasValue && dto.TypeId.Value > 0)
         {
           if (!_context.UserTypes.Any(t => t.Id == dto.TypeId.Value))
             return BadRequest("Invalid TypeId");
+          _context.UserModificationLogs.Add(new UserModificationLog
+          {
+            UserId = id,
+            UpdateDate = DateTime.Now,
+            modColumn = "TypeId",
+            newValue = dto.TypeId+"",
+            oldValue = user.TypeId+""
+
+          });
           user.TypeId = dto.TypeId.Value;
         }
 

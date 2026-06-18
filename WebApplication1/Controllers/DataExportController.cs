@@ -18,8 +18,7 @@ namespace WebApplication1.Controllers
 
         /// <summary>
         /// Triggers a background data export job. 
-        /// User receives a notification with download link when data is ready (~30s).
-        /// Returns immediately without blocking.
+        /// User receives a notification with download link when data is ready (~5s).
         /// </summary>
         /// <param name="userId">ID of the user requesting the export</param>
         /// <param name="dataType">Type of data to export (e.g. "users", "logs")</param>
@@ -51,7 +50,7 @@ namespace WebApplication1.Controllers
         }
 
         /// <summary>
-        /// Simulated download endpoint — in real app this would serve the generated file.
+        /// Simulated download endpoint 
         /// </summary>
         [HttpGet("download/{fileName}")]
         [AllowAnonymous]
